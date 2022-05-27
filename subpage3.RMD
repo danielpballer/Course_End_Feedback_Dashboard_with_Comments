@@ -1,0 +1,31 @@
+
+`r paste0('### ', quest_comment)`
+
+```{r fig.width=10}
+all_bigrams = subpage_comment3 %>% 
+  select(response, question) %>% 
+  drop_na()%>% 
+  unnest_tokens(bigram, response, token = "ngrams", n = 2) %>%  
+  # Split the bigrams into two words so we can remove stopwords
+  separate(bigram, c("word1", "word2"), sep = " ") %>% 
+   filter(!word1 %in% stop_words$word,
+          !word2 %in% stop_words$word
+          ) %>% 
+  # Put the two word columns back together
+  unite(bigram, word1, word2, sep = " ") %>% 
+  filter(bigram!="NA NA")
+
+top_bigrams <- all_bigrams %>% 
+  # Count the frequency of each bigram
+  count(bigram, question, sort = TRUE) %>% 
+  # Keep top 15 in each play
+  top_n(10) %>% 
+  # Make the bigrams an ordered factor so they plot in order
+  mutate(bigram = fct_inorder(bigram))
+
+ggplot(top_bigrams, aes(y = fct_rev(bigram), x = n)) + 
+  geom_col() + 
+  guides(fill = "none") +
+  labs(title = paste(top_bigrams$question[1]), x = "Count", y = NULL) +
+  theme_bw()
+```

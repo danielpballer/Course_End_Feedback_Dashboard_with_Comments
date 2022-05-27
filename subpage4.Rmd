@@ -1,0 +1,38 @@
+`r paste0('# ', course2, '{data-navmenu="Course Comments"}')`
+
+`r shiny::tags$h1(course2, style="text-align:center")`
+
+Qualitative assessment {.tabset}
+-----------------------------------------------------------------------
+
+```{r render subpages, include=FALSE}
+# Get all unique question names for the tabset
+quest_comment <- sort(unique(subpage_comments$Question_num))
+    
+# Create variable which stores all subpage tabset outputs
+out4 = NULL
+
+# Set knitr options to allow duplicate labels (needed for the subpages)
+options(knitr.duplicate.label = 'allow')
+
+# Create temporary environment which we use for knitting subpages.RMD for the tabset
+subpage_env4 <- new.env()
+
+#for loop for creating a plot for each question
+
+for (q_comment in quest_comment) {
+  # Filter data for product group 
+  subpage_comment3 <- subpage_comments %>% 
+    filter(Question_num == q_comment)
+  
+  # Assign filtered data and product group to subpage_env4 
+  assign("subpage_comment3", subpage_comment3, subpage_env4)
+  assign("quest_comment", q_comment, subpage_env4)
+  
+  # Knit subpage.RMD using the subpage_env and add result to out vector
+  out4 = c(out4, knitr::knit_child('subpage3.RMD', envir = subpage_env4))
+}
+
+```
+
+`r paste(knitr::knit_child(text = out4), collapse = '')`
